@@ -11,5 +11,5 @@ export const router = express.Router();
 
 router.post("/create", authUser, createMedicine);
 router.get("/get", authUser, getMedicines);
-router.put("/update/:id", updateMedicine);
-router.delete("/delete/:id", deleteMedicine);
+router.put("/update/:id",authUser, updateMedicine);
+router.delete("/delete/:id",authUser, deleteMedicine);

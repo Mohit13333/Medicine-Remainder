@@ -6,12 +6,13 @@ import connectDB from "./utils/connectDB.js";
 import {router as authRouter} from "./routes/user.route.js";
 import {router as medicineRouter} from "./routes/medicine.route.js";
 import {router as logRouter} from "./routes/log.route.js";
+import {router as adminRouter} from "./routes/admin.router.js";
 dotenv.config();
 const app = express();
 app.use(express.json());
 const corsOptions = {
-  origin: "https://medicine-remainder.netlify.app", // Replace with your frontend URL
-  credentials: true, // Allow credentials (cookies, authorization headers)
+  origin: "https://medicine-remainder.netlify.app", 
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
@@ -19,6 +20,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/medicine", medicineRouter);
 app.use("/api/log", logRouter);
+app.use("/api/admin", adminRouter);
 app.get('/',(req, res) => {
     res.send("Welcome")
 })

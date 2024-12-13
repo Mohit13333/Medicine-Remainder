@@ -5,7 +5,6 @@ import {
   getLogById,
   updateLog,
   deleteLog,
-  getFilteredLogs,
 } from "../controllers/log.controller.js";
 import { authAdmin, authUser } from "../middlewares/user.middleware.js";
 
@@ -19,6 +18,5 @@ router.get("/getlogs/:id", authUser, getLogById);
 
 router.put("/updatelogs/:id", authUser, updateLog);
 
-router.delete("/updatelogs/:id", authUser, deleteLog);
+router.delete("/deletelogs/:id", authUser, deleteLog);
 
-router.get("/filtered",authUser,authAdmin, getFilteredLogs);

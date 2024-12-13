@@ -7,35 +7,28 @@ import {
   updateLog,
   deleteLog,
   getLogById,
-  getFilteredLogs,
-  getUser, // Assuming there's an API to get users
-  getMedicines, // Assuming there's an API to get medicines
+  getUser,
+  getMedicines,
 } from "../services/api";
+import Navbar from "./NavBar";
 
 const Log = () => {
   const dispatch = useDispatch();
   const logs = useSelector((state) => state.logs.acknowledgmentLogs);
   const [status, setStatus] = useState("");
   const [selectedLog, setSelectedLog] = useState(null);
-//   const [filter, setFilter] = useState({
-//     userId: "",
-//     startDate: "",
-//     endDate: "",
-//   });
-  const [selectedUser, setSelectedUser] = useState(""); // New state for selected user
-  const [selectedMedicine, setSelectedMedicine] = useState(""); // New state for selected medicine
-  const [users, setUsers] = useState({ userId: "",name:"" }); // State to hold users
-  const [medicines, setMedicines] = useState([]); // State to hold medicines
+  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedMedicine, setSelectedMedicine] = useState("");
+  const [users, setUsers] = useState({ userId: "", name: "" });
+  const [medicines, setMedicines] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchLogs = async () => {
       try {
         const response = await getAcknowledgmentLogs();
-        console.log(response);
         dispatch(setLogs(response.data));
       } catch (error) {
-        console.error("Error fetching logs:", error);
         setErrorMessage("Failed to fetch logs. Please try again.");
       }
     };
@@ -44,19 +37,18 @@ const Log = () => {
       try {
         const userId = localStorage.getItem("userId");
         const response = await getUser(userId);
-        setUsers({ userId: response.data._id,name:response.data.name }); // Safely set users state as an array
+        setUsers({ userId: response.data._id, name: response.data.name });
+        setSelectedUser(response.data._id);
       } catch (error) {
-        console.error("Error fetching users:", error);
         setErrorMessage("Failed to fetch users. Please try again.");
       }
     };
 
     const fetchMedicines = async () => {
       try {
-        const response = await getMedicines(); // Fetch medicines from API
+        const response = await getMedicines();
         setMedicines(response.data);
       } catch (error) {
-        console.error("Error fetching medicines:", error);
         setErrorMessage("Failed to fetch medicines. Please try again.");
       }
     };
@@ -67,28 +59,26 @@ const Log = () => {
   }, [dispatch]);
 
   const handleCreateLog = async () => {
-    if (!status || !selectedUser || !selectedMedicine) {
-      setErrorMessage(
-        "Status, User ID, and Medicine ID are required to create a log."
-      );
+    const finalStatus = status || "taken";
+    if (!selectedMedicine) {
+      setErrorMessage("Medicine ID is required to create a log.");
       return;
     }
 
     try {
       const logData = {
-        status,
-        userId: selectedUser,
+        status: finalStatus,
+        userId: users.userId,
         medicineId: selectedMedicine,
       };
       await createLog(logData);
       setStatus("");
-      setSelectedUser("");
       setSelectedMedicine("");
       setErrorMessage("");
       const response = await getAcknowledgmentLogs();
+    //   console.log(response);
       dispatch(setLogs(response.data));
     } catch (error) {
-      console.error("Error creating log:", error);
       setErrorMessage("Failed to create log. Please try again.");
     }
   };
@@ -107,7 +97,6 @@ const Log = () => {
       const response = await getAcknowledgmentLogs();
       dispatch(setLogs(response.data));
     } catch (error) {
-      console.error("Error updating log:", error);
       setErrorMessage("Failed to update log. Please try again.");
     }
   };
@@ -119,190 +108,148 @@ const Log = () => {
       dispatch(setLogs(response.data));
       setErrorMessage("");
     } catch (error) {
-      console.error("Error deleting log:", error);
       setErrorMessage("Failed to delete log. Please try again.");
     }
   };
+
   const handleFetchLogById = async (id) => {
     try {
       const log = await getLogById(id);
-      console.log(log);
       setSelectedLog(log.data);
       setStatus(log.data.status);
-      setSelectedUser(log.data.userId); // Set selected user for editing
-      setSelectedMedicine(log.data.medicineId); // Set selected medicine for editing
+      setSelectedMedicine(log.data.medicineId._id);
       setErrorMessage("");
     } catch (error) {
-      console.error("Error fetching log by ID:", error);
       setErrorMessage("Failed to fetch log details. Please try again.");
     }
   };
-
-//   const handleFilterLogs = async () => {
-//     try {
-//       const response = await getFilteredLogs(filter);
-//       dispatch(setLogs(response.data));
-//       setErrorMessage("");
-//     } catch (error) {
-//       console.error("Error fetching filtered logs:", error);
-//       setErrorMessage("Failed to filter logs. Please try again.");
-//     }
-//   };
-
   return (
-    <div className="container mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">Acknowledgment Logs</h2>
-      {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
+    <>
+      <Navbar />
+      <div className="container mt-14 mx-auto p-6 bg-white shadow-lg rounded-lg">
+        <h2 className="text-2xl font-bold mb-4">Medicine Logs</h2>
+        {errorMessage && (
+          <div className="text-red-500 mb-4">{errorMessage}</div>
+        )}
+        {!selectedLog && (
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+            <select
+              value={users.userId}
+              disabled
+              className="border rounded py-2 px-2 bg-gray-100 cursor-not-allowed"
+            >
+              <option value="">{users.name}</option>
+            </select>
 
-      <div className="flex items-center mb-4">
-        <select
-          value={selectedUser}
-          onChange={(e) => setSelectedUser(e.target.value)}
-          className="border rounded py-2 px-3 mr-2 w-full"
-        >
-          <option value="">Select User</option>
-          {/* {users.map(user => ( */}
-          <option value={users.userId}>{users.name}</option> // Assuming user has a name property
-          {/* ))} */}
-        </select>
+            <select
+              value={selectedMedicine}
+              onChange={(e) => setSelectedMedicine(e.target.value)}
+              className="border rounded py-2 px-2"
+            >
+              <option value="">Select Medicine</option>
+              {medicines.map((medicine) => (
+                <option key={medicine._id} value={medicine._id}>
+                  {medicine.name}
+                </option>
+              ))}
+            </select>
 
-        <select
-          value={selectedMedicine}
-          onChange={(e) => setSelectedMedicine(e.target.value)}
-          className="border rounded py-2 px-3 mr-2 w-full"
-        >
-          <option value="">Select Medicine</option>
-          {medicines.map((medicine) => (
-            <option key={medicine._id} value={medicine._id}>
-              {medicine.name}
-            </option> // Assuming medicine has a name property
-          ))}
-        </select>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="border rounded py-2 px-2"
+            >
+              <option value="">Select Acknowledged Status (Optional)</option>
+              <option value="taken">Taken</option>
+              <option value="missed">Missed</option>
+            </select>
 
-        <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border rounded py-2 px-3 mb-2 w-full"
-          >
-            <option value="">Select Acknowelged status</option>
-            <option>acknowledged</option>
-            <option>missed</option>
-          </select>
+            <button
+              onClick={handleCreateLog}
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            >
+              Create Log
+            </button>
+          </div>
+        )}
+        {selectedLog && (
+          <div className="mt-4 p-4 border rounded bg-gray-100">
+            <h3 className="text-lg font-semibold mb-2">
+              Medicine id: {selectedLog._id}
+            </h3>
+            <select
+              value={users.userId}
+              disabled
+              className="border rounded py-2 px-3 mb-2 w-full bg-gray-100 cursor-not-allowed"
+            >
+              <option value="">{users.name}</option>
+            </select>
 
-        <button
-          onClick={handleCreateLog}
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-        >
-          Create Log
-        </button>
-      </div>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="border rounded py-2 px-3 mb-2 w-full"
+            >
+              <option value="">Select Acknowledged Status</option>
+              <option value="taken">Taken</option>
+              <option value="missed">Missed</option>
+            </select>
+            <button
+              onClick={() => handleUpdateLog(selectedLog._id)}
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            >
+              Update Log
+            </button>
+          </div>
+        )}
 
-      {/* <h3 className="text-lg font-semibold mb-2">Filter Logs</h3>
-      <div className="flex flex-col mb-4">
-        <input
-          type="text"
-          placeholder="User ID"
-          value={filter.userId}
-          onChange={(e) => setFilter({ ...filter, userId: e.target.value })}
-          className="border rounded py-2 px-3 mb-2"
-        />
-        <div className="flex space-x-2 mb-2">
-          <input
-            type="date"
-            value={filter.startDate}
-            onChange={(e) =>
-              setFilter({ ...filter, startDate: e.target.value })
-            }
-            className="border rounded py-2 px-3"
-          />
-          <input
-            type="date"
-            value={filter.endDate}
-            onChange={(e) => setFilter({ ...filter, endDate: e.target.value })}
-            className="border rounded py-2 px-3"
-          />
-        </div>
-        <button
-          onClick={handleFilterLogs}
-          className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
-        >
-          Filter Logs
-        </button>
-      </div> */}
-
-      <ul className="border-t border-gray-300">
-        {logs.map((log) => (
-          <li
-            key={log._id}
-            className="flex justify-between items-center border-b py-2"
-          >
-            <span>{log.status}</span>
-            <div>
-              <button
-                onClick={() => handleFetchLogById(log._id)}
-                className="bg-yellow-500 text-white py-1 px-2 rounded hover:bg-yellow-600 mr-2"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDeleteLog(log._id)}
-                className="bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {selectedLog && (
-        <div className="mt-4 p-4 border rounded bg-gray-100">
-          <h3 className="text-lg font-semibold mb-2">
-            Editing Log: {selectedLog._id}
-          </h3>
-          <select
-            value={selectedUser}
-            onChange={(e) => setSelectedUser(e.target.value)}
-            className="border rounded py-2 px-3 mb-2 w-full"
-          >
-            <option value="">Select User</option>
-            {/* {users.map((user) => ( */}
-              <option key={users._id} value={users._id}>
-                {users.name}
-              </option>
-            {/* ))} */}
-          </select>
-
-          <select
-            value={selectedMedicine}
-            onChange={(e) => setSelectedMedicine(e.target.value)}
-            className="border rounded py-2 px-3 mb-2 w-full"
-          >
-            <option value="">Select Medicine</option>
-            {medicines.map((medicine) => (
-              <option key={medicine._id} value={medicine._id}>
-                {medicine.name}
-              </option>
+        <table className="min-w-full border-collapse border border-gray-300">
+          <thead>
+            <tr>
+              <th className="border border-gray-300 px-2 py-2">
+                Medicine Name
+              </th>
+              <th className="border border-gray-300 px-2 py-2">Dosage</th>
+              <th className="border border-gray-300 px-2 py-2">Status</th>
+              <th className="border border-gray-300 px-2 py-2">Timestamp</th>
+              <th className="border border-gray-300 px-2 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logs.map((log) => (
+              <tr key={log._id} className="border-b border-gray-200">
+                <td className="border border-gray-300 px-2 py-2">
+                  {log?.medicineId?.name}
+                </td>
+                <td className="border border-gray-300 px-2 py-2">
+                  {log?.medicineId?.dosage}
+                </td>
+                <td className="border border-gray-300 px-2 py-2">
+                  {log.status}
+                </td>
+                <td className="border border-gray-300 px-2 py-2">
+                  {new Date(log.timestamp).toLocaleString()}
+                </td>
+                <td className="border border-gray-300 px-2 py-2">
+                  <button
+                    onClick={() => handleFetchLogById(log._id)}
+                    className="bg-green-500 m-2 text-white py-1 px-2 rounded mr-2"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteLog(log._id)}
+                    className="bg-blue-500 m-2 text-white py-1 px-2 rounded"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
             ))}
-          </select>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border rounded py-2 px-3 mb-2 w-full"
-          >
-            <option value="">Select Acknowelged status</option>
-            <option>acknowledged</option>
-            <option>missed</option>
-          </select>
-          <button
-            onClick={() => handleUpdateLog(selectedLog._id)}
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-          >
-            Update Log
-          </button>
-        </div>
-      )}
-    </div>
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 };
 

@@ -7,7 +7,7 @@ const logSchema = new mongoose.Schema({
     ref: "Medicine",
     required: true,
   },
-  status: { type: String, enum: ["acknowledged", "missed"], required: true }, 
+  status: { type: String, enum: ["taken", "missed"], default:"taken"}, 
   timestamp: { type: Date, default: Date.now },
 });
 

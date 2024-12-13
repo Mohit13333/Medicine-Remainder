@@ -2,15 +2,14 @@ import React, { useState } from "react";
 import { registerUser } from "../services/api";
 import { useDispatch } from "react-redux";
 import { setUser } from "../slices/userSlice";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-
+import { useNavigate } from "react-router-dom";
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -18,15 +17,12 @@ const Register = () => {
 
     try {
       const response = await registerUser({ name, email, password });
-      localStorage.setItem("token", response.data.accessToken); // Store token in local storage
-      dispatch(setUser(response.data.user)); // Set user in Redux state
-      navigate("/medicine-schedule"); // Redirect to medicine schedule using navigate
+      localStorage.setItem("token", response.data.accessToken);
+      dispatch(setUser(response.data.user));
+      navigate("/medicine-schedule");
     } catch (error) {
-      console.error("Registration failed:", error);
-      setError(
-        error.response?.data?.message ||
-          "Registration failed. Please try again."
-      );
+      // console.error("Registration failed:", error);
+      setError("Registration failed. Please try again.");
     }
   };
 

@@ -1,20 +1,18 @@
-// Logout.js
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { clearUser } from "../slices/userSlice"; // Adjust the import path based on your file structure
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { clearUser } from "../slices/userSlice";
+import { useNavigate } from "react-router-dom";
 
 const Logout = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Dispatch the clearUser action to log out
     dispatch(clearUser());
-    navigate("/login"); // Redirect to login page after logging out
+    navigate("/login");
   }, [dispatch, navigate]);
 
-  return null; // No need to render anything for logout
+  return null;
 };
 
 export default Logout;

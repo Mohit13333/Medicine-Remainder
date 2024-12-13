@@ -1,8 +1,7 @@
-// logSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const logSlice = createSlice({
-  name: 'logs',
+  name: "logs",
   initialState: {
     acknowledgmentLogs: [],
   },
