@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 const corsOptions = {
-  origin: "http://localhost:5173", // Replace with your frontend URL
+  origin: "medicine-remainder.netlify.app", // Replace with your frontend URL
   credentials: true, // Allow credentials (cookies, authorization headers)
 };
 
