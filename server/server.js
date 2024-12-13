@@ -3,13 +3,22 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./utils/connectDB.js";
-import {router as authRouter} from "./routes/user.route.js"
+import {router as authRouter} from "./routes/user.route.js";
+import {router as medicineRouter} from "./routes/medicine.route.js";
+import {router as logRouter} from "./routes/log.route.js";
 dotenv.config();
 const app = express();
 app.use(express.json());
-app.use(cors());
+const corsOptions = {
+  origin: "http://localhost:5173", // Replace with your frontend URL
+  credentials: true, // Allow credentials (cookies, authorization headers)
+};
+
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use("/api/auth", authRouter);
+app.use("/api/medicine", medicineRouter);
+app.use("/api/log", logRouter);
 app.get('/',(req, res) => {
     res.send("Welcome")
 })
