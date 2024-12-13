@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api'; // Update with your API base URL
+const API_URL = `${import.meta.env.VITE_BACKEND_URI}/api`; // Update with your API base URL
 
 const api = axios.create({
   baseURL: API_URL,
